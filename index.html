@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="https://vjmap.com/demo/js/vjmap/vjmap.min.css">
+    <script type="text/javascript" src="https://vjmap.com/demo/js/vjmap/vjmap.min.js"></script>
+    <script type="text/javascript" src="./lib/map.js"></script>
+    <script type="text/javascript" src="./draw.js"></script>
+    <title>唯杰地图AI绘图CAD</title>
+</head>
+
+<body style=" margin: 0;overflow: hidden;background-color:white;font-size: 16px">
+    <div id="map" style="left:0;right:0;top:0;bottom:0;position: absolute;z-index: 0;"></div>
+</body>
+
+</html>
+<script>
+    (async function () {
+        document.body.style.background = "#022B4F"; // 背景色改为深色
+        const env = {
+            serviceUrl: "https://vjmap.com/server/api/v1",
+            accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MiwiVXNlcm5hbWUiOiJhZG1pbjEiLCJOaWNrTmFtZSI6ImFkbWluMSIsIkF1dGhvcml0eUlkIjoiYWRtaW4iLCJCdWZmZXJUaW1lIjo4NjQwMCwiZXhwIjo0ODEzMjY3NjM3LCJpc3MiOiJ2am1hcCIsIm5iZiI6MTY1OTY2NjYzN30.cDXCH2ElTzU2sQU36SNHWoTYTAc4wEkVIXmBAIzWh6M",
+        };
+       
+        let exampleMapId = ""
+        let mapid = new URL(location.href).searchParams.get("mapid")
+        if (mapid) {
+            exampleMapId = mapid
+        }
+        // --拉伸多边形--
+        // 地图服务对象
+        let map;
+        let svc = new vjmap.Service(env.serviceUrl, env.accessToken)
+
+        if (exampleMapId) {
+            // 打开图
+            let res = await svc.openMap({
+                mapid: env.exampleMapId, // 地图ID,(请确保此ID已存在，可上传新图形新建ID)
+                mapopenway: vjmap.MapOpenWay.GeomRender, // 以几何数据渲染方式打开
+                style: vjmap.openMapDarkStyle() // div为深色背景颜色时，这里也传深色背景样式
+            })
+            if (res.error) {
+                alert(res.error)
+                throw res.error
+            }
+            // 获取地图的范围
+            let mapExtent = vjmap.GeoBounds.fromString(res.bounds);
+            // 建立坐标系
+            let prj = new vjmap.GeoProjection(mapExtent);
+
+            // 新建地图对象
+            let map = new vjmap.Map({
+                container: 'map', // container ID
+                style: svc.vectorStyle(), // 栅格瓦片样式
+                center: prj.toLngLat(mapExtent.center()), // 中心点
+                zoom: 2,
+                renderWorldCopies: false
+            });
+            // 地图关联服务对象和坐标系
+            map.attach(svc, prj);
+        } else {
+            // 建一个空的地图
+            // 获取地图范围
+            let mapExtent = vjmap.GeoBounds.fromArray([-1000, -1000, 1000, 1000]);
+            // 根据地图范围建立几何投影坐标系
+            let prj = new vjmap.GeoProjection(mapExtent);
+
+            // 地图对象
+            map = new vjmap.Map({
+                container: 'map', // DIV容器ID
+                style: svc.rasterBlankStyle(0, 24), // 空白地图
+                center: prj.toLngLat(mapExtent.center()), // 设置地图中心点
+                zoom: 1, // 设置地图缩放级别,
+                pitch: 0, // 倾斜角度
+                renderWorldCopies: false // 不显示多屏地图
+            });
+            // 关联服务对象和投影对象
+            map.attach(svc, prj);
+        }
+
+
+        // 根据地图本身范围缩放地图至全图显示
+        //map.fitMapBounds();
+        await map.onLoad(); // 等待地图加载完成
+        let userConfig = {};
+        if (svc.getUserConfig) {
+            userConfig = await svc.getUserConfig()
+        }
+        if (userConfig.shareWorkspace) {
+            svc.switchWorkspace(userConfig.shareWorkspace)
+        }
+
+        let mousePositionControl = new vjmap.MousePositionControl({ showZoom: true });
+        map.addControl(mousePositionControl, "bottom-right");
+
+        // 点击有高亮状态（鼠标点击地图元素上时，会高亮)
+        map.enableLayerClickHighlight(svc, e => {
+            if (!e) return;
+            let msg = `type: ${e.name}, id: ${e.objectid}, layer: ${e.layerindex}`
+            map.logInfo(msg);
+            console.log(e);
+        }, "#00ffff")
+
+        window.map = map
+
+        try {
+            let drawJson = await createCadJsonData();
+            // 创建地图
+            await createMapData(drawJson);
+        } catch(err) {
+            let msg = typeof err === "string" ? err : (err.response ? err.response : JSON.stringify(err));
+            map.logInfo("创建地图失败！(请按F12打开控制台，复制错误内容再输入给AI解决). 错误：" + msg, "error", 15000);
+            console.error(err)
+        }
+    })()
+    
+   
+</script>
