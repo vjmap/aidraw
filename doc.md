@@ -25,6 +25,7 @@
 - `layer`: string - 图层名称。(可选)
 - `linetype`: string - 线型名称。(可选)
 - `linetypeScale`: number - 线型比例。(可选)
+- `isDashline`: boolean - 是否为虚线(可选，默认false)
 - `lineWidth`: number - 线宽。(可选)
 - `alpha`: number - 透明度（0 完全透明，255 完全不透明）。(可选)
 - `visibility`: boolean - 是否可见。 (可选)
@@ -39,8 +40,6 @@
 #### `DbLine` 线实体：
 - `start`: [number, number, number?] - 起点坐标。(cloneFromDb为空时必填)
 - `end`: [number, number, number?] - 终点坐标。(cloneFromDb为空时必填)
-- `isDashline`: boolean - 是否为虚线(可选，默认false)
-- `linetypeScale`: number - 线型比例(可选，默认1.0)
 - `thickness`: number - 厚度。(可选)
 #### `DbCircle` 圆实体：
 - `center`: [number, number, number?] - 圆心坐标。(cloneFromDb为空时必填)
@@ -61,8 +60,6 @@
 - `bulge`: number[] - 顶点的凸度数组。(可选)
 - `startWidth`: number[] - 起点宽度数组。(可选)
 - `endWidth`: number[] - 终点宽度数组。(可选)
-- `isDashline`: boolean - 是否为虚线(可选，默认false)
-- `linetypeScale`: number - 线型比例(可选，默认1.0)
 #### `DbText` 单行文本实体：
 - `height`: number - 高度。(cloneFromDb为空时必填)
 - `rotation`: number - 旋转角度（0-360度）。(可选)
@@ -94,14 +91,10 @@
 - `elevation`: number - 高程。(可选)
 - `polyType`: Poly2dType - 折线类型(0 普通折线[默认], 1 曲线拟合, 2 二次样条, 3 三次样条)。(可选)
 - `points`: Array<[number, number, number?]> - 顶点坐标数组。(cloneFromDb为空时必填)
-- `isDashline`: boolean - 是否为虚线(可选，默认false)
-- `linetypeScale`: number - 线型比例(可选，默认1.0)
 #### `Db3dPolyline` 三维多段线实体：
 - `closed`: boolean - 是否闭合。(可选)
 - `polyType`: number - 折线类型(0 普通折线[默认], 1 二次样条, 2 三次样条)。(可选)
 - `points`: Array<[number, number, number?]> - 顶点坐标数组。(cloneFromDb为空时必填)
-- `isDashline`: boolean - 是否为虚线(可选，默认false)
-- `linetypeScale`: number - 线型比例(可选，默认1.0)
 #### `DbSpline` 样条曲线实体：
 - `fitTol`: number - 曲线拟合公差(可选)
 - `fitPoints`: Array<[number, number, number?]> - 拟合点。(可选 fitPoints 和 controlPoints 必须选一)
@@ -140,7 +133,7 @@
 - `xLine1End`: [number, number, number?] - 角度标注线1终点位置
 - `xLine2Start`: [number, number, number?] - 角度标注线2开始位置
 - `xLine2End`: [number, number, number?] - 角度标注线2终点位置
-- `arcPoint`: [number, number, number?] - 圆弧点的位置点（与标注线开始和终点组成一个圆弧)
+- `arcPoint`: [number, number, number?] - 圆弧点的位置点(与标注线开始和终点组成一个圆弧)
 - `textPosition`: [number, number, number?] - 标注文字位置
 - `textHeight`: number - 标注文字高度
 - `arrowSize`: number - 箭头大小
